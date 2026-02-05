@@ -58,8 +58,8 @@ cover/
 # Django stuff:
 *.log
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
+*.sqlite3
+*.sqlite3-journal
 
 # Flask stuff:
 instance/
@@ -205,3 +205,21 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# PyCharm
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/shelf/
+.idea/dataSources/
+.idea/dataSources.local.xml
+.idea/httpRequests/
+.idea/libraries/
+
+# Ignorar tudo e liberar só o necessário
+.idea/*
+!.idea/misc.xml
+!.idea/modules.xml
+!.idea/*.iml
+!.idea/vcs.xml
+!.idea/inspectionProfiles/

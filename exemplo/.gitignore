@@ -1,0 +1,17 @@
+# PyCharm
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/shelf/
+.idea/dataSources/
+.idea/dataSources.local.xml
+.idea/httpRequests/
+.idea/libraries/
+
+# Ignorar tudo e liberar só o necessário
+.idea/*
+!.idea/misc.xml
+!.idea/modules.xml
+!.idea/*.iml
+!.idea/vcs.xml
+!.idea/inspectionProfiles/
