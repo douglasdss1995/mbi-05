@@ -31,3 +31,8 @@ class VendaViewSet(viewsets.ModelViewSet):
 class VendaItemViewSet(viewsets.ModelViewSet):
     queryset = models.VendaItem.objects.all()
     serializer_class = serializers.VendaItemSerializer
+
+
+class ClienteViewSet(viewsets.ModelViewSet):
+    queryset = models.Cliente.objects.all()
+    serializer_class = serializers.ClienteSerializer

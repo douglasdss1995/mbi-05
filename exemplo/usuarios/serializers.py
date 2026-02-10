@@ -37,3 +37,9 @@ class VendaItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VendaItem
         fields = "__all__"
+
+
+class ClienteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Cliente
+        fields = "__all__"

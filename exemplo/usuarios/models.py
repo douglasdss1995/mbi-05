@@ -66,3 +66,11 @@ class VendaItem(ModeloBase):
 
     def __str__(self):
         return f"ID: {self.id} - Venda ID: {self.venda.id} - Produto: {self.produto.descricao} - Quantidade: {self.quantidade}"
+
+
+class Cliente(ModeloBase):
+    nome = models.CharField(max_length=255, null=False, blank=False)
+    telefone = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.nome
