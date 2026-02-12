@@ -38,8 +38,8 @@ class MaritalStateViewSet(viewsets.ModelViewSet):
     serializers = serializers.MaritalStatusSerializer
 
 
-class CustumerViewSet(viewsets.ModelViewSet):
-    queryset = models.Custumer.objects.all()
+class CustomerViewSet(viewsets.ModelViewSet):
+    queryset = models.Customer.objects.all()
     serializers = serializers.CustomerSerializer
 
 
