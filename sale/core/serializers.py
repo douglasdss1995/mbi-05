@@ -3,6 +3,30 @@ from rest_framework import serializers
 from core import models
 
 
+class ProductGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductGroup
+        fields = '__all__'
+
+
+class SupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Supplier
+        fields = '__all__'
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Product
+        fields = '__all__'
+
+
+class ZoneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Zone
+        fields = '__all__'
+
+
 class StateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.State
@@ -15,21 +39,9 @@ class CitySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ZoneSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Zone
-        fields = '__all__'
-
-
 class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.District
-        fields = '__all__'
-
-
-class DepartmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Department
         fields = '__all__'
 
 
@@ -39,15 +51,15 @@ class BranchSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class MaritalStatusSerializer(serializers.ModelSerializer):
+class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.MaritalStatus
+        model = models.Department
         fields = '__all__'
 
 
-class CustomerSerializer(serializers.ModelSerializer):
+class MaritalStatusSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Custumer
+        model = models.MaritalStatus
         fields = '__all__'
 
 
@@ -57,21 +69,9 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class SupplierSerializer(serializers.ModelSerializer):
+class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Supplier
-        fields = '__all__'
-
-
-class ProductGroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.ProductGroup
-        fields = '__all__'
-
-
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Product
+        model = models.Customer
         fields = '__all__'
 
 
