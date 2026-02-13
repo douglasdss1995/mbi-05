@@ -1,4 +1,9 @@
+from decimal import Decimal
+
+from django.db.models import QuerySet
+
 from core import models
+from core.models import Product, Employee
 
 
 def get_all_products():
@@ -53,3 +58,100 @@ def create_product():
         active=True
 
     )
+
+
+def create_product_group():
+    return models.ProductGroup.objects.create(
+        name='productGroup',
+        commission_percentage=1,
+        gain_percentage=1,
+    )
+
+
+def deactivate_product():
+    return Product.objects.all().update(active=False)
+
+
+def uptade_product_group_commission_percentage():
+    return models.ProductGroup.objects.filter(id=20).update(
+        commission_percentage=0
+    )
+
+
+"""atualize o percentual de lucro de um grupo de produtos
+#Args: 
+#product_grouo_id
+
+"""
+
+
+# def update_salary_for_employee(add_percent: Decimal) -> Decimal:
+# return models.Employee.objects.all()udpate
+
+def update_product_sale_price(product_id: int, sale_price: Decimal) -> int:
+    return models.Product.objects.filter(product_id=product_id).update(
+        sale_price=sale_price
+    )
+
+
+def uddate_product_group_gain_percentage(product_group_id: int, gain_percentage: Decimal) -> int:
+    return models.ProductGroup.objects.filter(id=product_group_id).update(
+        gain_percentage=gain_percentage
+    )
+
+
+def delete_zone_by_id(zone_id: int):
+    return models.Zone.objects.filter(id=zone_id).delete()
+
+
+def count_all_products() -> int:
+    return models.Product.objects.count()
+
+
+def count_active_employees() -> int:
+    return models.Employee.objects.filter(active=True).count()
+
+
+def count_active_customers() -> int:
+    return models.Customer.objects.filter(active=True).count()
+
+
+def has_eny_product() -> bool:
+    return models.Product.objects.exists()
+
+
+def has_customer_with_name(name: str) -> bool:
+    return models.Customer.objects.filter(name=name).exists()
+
+
+def get_firts_acttive_employee() -> Employee | None:
+    return models.Employee.objects.filter(active=True).first()
+
+
+def get_firts_five_products() -> QuerySet[models.Product]:
+    return models.Product.objects.all()[:5]
+
+
+def get_products_from_6_to_10() -> QuerySet[Product]:
+    return models.Product.objects.all()[5:10]
+
+
+def get_hifh_employees(min_salary: Decimal) -> QuerySet[Employee]:
+    return models.Employee.objects.filter(salary__gte=min_salary)
+
+
+def get_products_by_name_contains(term: str) -> QuerySet[Product]:
+    return models.Product.objects.filter(name__icontains=term)
+
+
+def get_employees_name_startswith(prefix: str) -> QuerySet[Employee]:
+    return models.Employee.objects.filter(name__startswith=prefix)
+
+
+def get_employees_name_endswith(prefix: str) -> QuerySet[Employee]:
+    return models.Employee.objects.filter(name__endswith=prefix).count()
+
+
+def count_employees_by_name_name(name: str) -> int:
+    usuarios = models.Employee.objects.filter(name__icontains=name, active=True)
+    return usuarios.count()
