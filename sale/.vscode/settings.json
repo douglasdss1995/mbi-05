@@ -1,0 +1,69 @@
+{
+    // Configurações do Python e uv
+    // Utilizada para Linux
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python.exe",
+    // Utilizada para Windows
+    // "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+
+    "python.terminal.activateEnvironment": true,
+
+    // Desabilitar linters antigos em favor do Ruff
+    "python.linting.enabled": false,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": false,
+    "python.linting.mypyEnabled": false,
+
+    // Configurar Ruff como linter e formatter
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        },
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+
+    // Configurações específicas do Ruff (servidor nativo)
+    "ruff.enable": true,
+    "ruff.nativeServer": true,
+
+    // Configurações do editor
+    "editor.rulers": [100],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+
+    // Arquivos a excluir
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/.pytest_cache": true,
+        "**/.ruff_cache": true,
+        "**/*.egg-info": true,
+        "**/tmpclaude-*-cwd": true
+    },
+
+    // Configurações específicas do Django
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}"
+    ],
+    "python.languageServer": "Pylance",
+    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.autoImportCompletions": true,
+
+    // Emmet para templates Django
+    "emmet.includeLanguages": {
+        "django-html": "html"
+    },
+
+    // Associações de arquivos
+    "files.associations": {
+        "**/*.html": "html",
+        "**/templates/**/*.html": "django-html",
+        "**/templates/**/*": "django-txt",
+        "**/requirements{/**,*}.{txt,in}": "pip-requirements"
+    },
+    "cSpell.language": "en,pt,pt_BR",
+}

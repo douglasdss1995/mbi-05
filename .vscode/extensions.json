@@ -1,0 +1,19 @@
+{
+    "recommendations": [
+        "ms-python.debugpy",
+        "ms-python.vscode-python-envs",
+        "njpwerner.autodocstring",
+        "batisteo.vscode-django",
+        "charliermarsh.ruff",
+        "jcdj666.uv-run",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "davidanson.vscode-markdownlint",
+        "ms-python.vscode-pylance",
+        "gruntfuggly.todo-tree",
+        "christian-kohler.path-intellisense",
+        "formulahendry.auto-rename-tag",
+        "streetsidesoftware.code-spell-checker",
+        "streetsidesoftware.code-spell-checker-portuguese-brazilian"
+    ]
+}
