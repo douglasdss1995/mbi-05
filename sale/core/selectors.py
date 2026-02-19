@@ -1,9 +1,9 @@
 from decimal import Decimal
 
-from django.db.models import F, QuerySet
+from django.db.models import F, QuerySet, Q
 
 from core import models
-from core.models import Employee, Product
+from core.models import Employee, Product, Customer
 
 
 def deactivate_all_products() -> int:
@@ -96,3 +96,51 @@ def count_employees_startswith(prefix: str) -> int:
 
 def count_employees_by_name(name: str) -> int:
     return models.Employee.objects.filter(name__icontains=name).count()
+
+
+def get_products_by_ids(product_ids: list[int]) -> QuerySet[Product]:
+    return models.Product.objects.filter(id__in=product_ids)
+
+
+def get_all_products():
+    return models.Product.objects.all()
+
+
+def get_products_by_supplier_name(supplier_name: str) -> QuerySet[Product]:
+    return models.Product.objects.filter(supplier__name__icontains=supplier_name)
+
+
+def get_all_suppliers():
+    return models.Supplier.objects.all()
+
+
+def get_products_by_name_or_id(term: str) -> QuerySet[Product]:
+    return models.Product.objects.filter(
+        Q(name__icontains=term) | Q(id=term)
+    )
+
+
+def get_customer_by_filters(
+        name: str,
+        city: str = None
+) -> QuerySet[Customer]:
+    query = Q(name__icontains=name)
+
+    if city:
+        query &= Q(district_city__name__icontains=city)
+        query &= ~Q(district_id=1)
+
+    return models.Customer.objects.filter(query)
+
+
+def get_all_customers():
+    return models.Customer.objects.all()
+
+
+def get_all_cities():
+    return models.City.objects.all()
+
+
+def increase_all_salaries(percentage: Decimal) -> int:
+    multiplier = 1 + percentage / 100
+    return models.Employee.objects.all().update(salary=F(name='salary') * multiplier)
