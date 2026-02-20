@@ -45,7 +45,7 @@ from core.models import (
     Department,
     Employee,
     Product,
-    ProductGroup,
+    ProductGroup, Branch,
 )
 
 
@@ -286,3 +286,74 @@ def get_top_5_product_groups_by_profit() -> QuerySet[ProductGroup]:
         .order_by('-lucro_potencial')
         [:5]
     )
+
+
+"""
+Salário Médio por Departamento
+Objetivo: Calcular o salário médio dos funcionários de cada departamento.
+Enunciado:
+Mostre cada departamento com seu salário médio, ordenado do maior para o menor salário.
+"""
+
+
+def average_salary() -> None:
+    result = Employee.objects.values('department__name').annotate(
+        avg_salary=Avg('salary')
+    ).order_by('-avg_salary')
+
+    # Exibir resultado
+    for item in result:
+        print(f"{item['department__name']}: R$ {item['avg_salary']:,.2f}")
+
+
+"""
+Total de Clientes por Estado
+Objetivo: Contar quantos clientes existem em cada estado.
+Enunciado:
+Liste todos os estados mostrando quantos clientes residem em cada um.
+"""
+
+
+def customers_by_state() -> None:
+    result = Customer.objects.values(
+        'district__city__state__name',
+        'district__city__state__abbreviation'
+    ).annotate(
+        total_customers=Count('id')
+    ).order_by('-total_customers')
+
+    # Exibir resultado
+    for item in result:
+        state = item['district__city__state__name']
+        abbr = item['district__city__state__abbreviation']
+        total = item['total_customers']
+        print(f"{state} ({abbr}): {total} clientes")
+
+
+"""
+Quantidade de Vendas por Filial
+Objetivo: Contar quantas vendas foram realizadas em cada filial.
+Enunciado:
+Mostre cada filial com o total de vendas realizadas, ordenado do maior para o menor.
+"""
+
+
+def sales_by_branch() -> None:
+    # result = Branch.objects.values('name').annotate(
+    #     total_sales=Count('sales'),
+    #     total_value=Sum(
+    #         F("sales__sale_items__quantity") * F("sales__sale_items__sale_price")
+    #     ),
+    # ).order_by('-total_sales')
+    #
+    # # Exibir resultado
+    # for item in result:
+    #     print(f"Filial {item.get('name')}: {item.get('total_sales')} vendas com valor de: {item.get('total_value', 0)}")e
+    vendas = Branch.objects.values('name').annotate(
+        total_value=Sum(
+            F('sales__sale_items__quantity') * F('sales__sale_items__sale_price')
+        )
+    )
+
+    for item in vendas:
+        print(f'Branch: {item.get("name")} - Total value: {item.get("total_value")}')

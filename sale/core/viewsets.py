@@ -1,6 +1,40 @@
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from core import models, serializers
+from core import models, selectors, serializers
+
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = models.Product.objects.all()
+    serializer_class = serializers.ProductSerializer
+
+    @action(detail=False, methods=["get"])
+    def test_queryset(self, request):
+        data = selectors.get_all_products()[:5]
+        serializer = self.get_serializer(data, many=True)
+        return Response(data=serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def get_all_employees(self, request):
+        data = selectors.get_all_employees()[:5]
+        serializer = serializers.EmployeeSerializer(data, many=True)
+        return Response(data=serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def count_products(self, request):
+        data = selectors.count_all_products()
+        return Response(data=data)
+
+    @action(detail=False, methods=["get"])
+    def get_products_with_absolute_profit(self, request):
+        data = selectors.get_products_with_absolute_profit()
+        return Response(data=data)
+
+    @action(detail=False, methods=["get"])
+    def spanning_fields(self, request):
+        data = models.Product.objects.values("id", "name", "product_group__name")
+        return Response(data=data)
 
 
 class ProductGroupViewSet(viewsets.ModelViewSet):
@@ -11,11 +45,6 @@ class ProductGroupViewSet(viewsets.ModelViewSet):
 class SupplierViewSet(viewsets.ModelViewSet):
     queryset = models.Supplier.objects.all()
     serializer_class = serializers.SupplierSerializer
-
-
-class ProductViewSet(viewsets.ModelViewSet):
-    queryset = models.Product.objects.all()
-    serializer_class = serializers.ProductSerializer
 
 
 class ZoneViewSet(viewsets.ModelViewSet):
