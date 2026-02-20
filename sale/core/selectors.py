@@ -12,6 +12,7 @@ Usaremos os modelos do nosso projeto de vendas para exemplificar.
 
 from datetime import date
 from decimal import Decimal
+from typing import Any
 
 from django.db.models import (
     Avg,
@@ -37,7 +38,7 @@ from core.models import (
     SaleItem,
     State,
     Supplier,
-    Zone,
+    Zone, Branch,
 )
 
 
@@ -1014,292 +1015,41 @@ def get_products_where_cost_exceeds_group_commission() -> QuerySet[Product]:
     return Product.objects.filter(
         cost_price__gt=F("product_group__commission_percentage"),
     )
-
-
-# =============================================================================
-# Aggregate — Agregações (retorna um dicionário com valores calculados)
-# =============================================================================
-# aggregate() opera sobre o QuerySet INTEIRO e retorna um DICIONÁRIO.
-# Diferente de annotate(), que adiciona campos a CADA objeto.
-# Funções disponíveis: Sum, Avg, Count, Min, Max, StdDev, Variance
-def get_total_employee_salary() -> dict:
-    # aggregate() retorna um DICIONÁRIO com valores calculados
-    # Equivale a: SELECT SUM(salary) AS salary__sum FROM employee
-    # Retorna: {'salary__sum': Decimal('150000.00')}
-    # O nome da chave é gerado automaticamente: campo__função
-    return Employee.objects.aggregate(Sum("salary"))
-
-
 def get_total_salary_with_alias() -> dict:
-    # Use keyword arguments para dar um nome personalizado ao resultado
-    # Equivale a: SELECT SUM(salary) AS total FROM employee
-    # Retorna: {'total': Decimal('150000.00')} — muito mais legível!
-    return Employee.objects.aggregate(total=Sum("salary"))
+    return Employee.objects.aggregate(total=Sum('salary'))
 
+def get_brach_sales(brach_id: int) -> Decimal:
+    return Branch.objects.filter(id=brach_id).aggregate(
+        total_sale=Sum(
+            F(name="sales__sale_items__quantity") * F(name="sales__sale_items__sale_price")
+        ),
+    )["total_sale"] or Decimal(value="0.00")
 
-def get_average_product_price() -> dict:
-    # Avg() calcula a MÉDIA dos valores
-    # Equivale a: SELECT AVG(sale_price) AS preco_medio FROM product
-    # Retorna: {'preco_medio': Decimal('49.90')}
-    return Product.objects.aggregate(preco_medio=Avg("sale_price"))
-
-
-def get_salary_range() -> dict:
-    # Você pode calcular MÚLTIPLOS agregados em uma única query
-    # Equivale a: SELECT MIN(salary) AS menor, MAX(salary) AS maior FROM employee
-    # Retorna: {'menor': Decimal('1500.00'), 'maior': Decimal('15000.00')}
-    return Employee.objects.aggregate(
-        menor=Min("salary"),
-        maior=Max("salary"),
-    )
-
-
-def get_customer_stats() -> dict:
-    # Count() conta registros — combine com outros agregados
-    # Tudo resolvido em uma ÚNICA query SQL
-    # Retorna: {'total': 500, 'renda_media': Decimal('3500.00'),
-    #           'maior_renda': Decimal('50000.00')}
-    return Customer.objects.aggregate(
-        total=Count("id"),
-        renda_media=Avg("income"),
-        maior_renda=Max("income"),
-    )
-
-
-def get_active_employee_salary_stats() -> dict:
-    # aggregate() pode ser combinado com filter() — agrega só os filtrados
-    # Equivale a: SELECT SUM(salary) AS total, AVG(salary) AS media
-    #             FROM employee WHERE active = true
-    return Employee.objects.filter(active=True).aggregate(
-        total=Sum("salary"),
-        media=Avg("salary"),
-    )
-
-
-def get_total_sale_items_value() -> dict:
-    # Sum() pode ser usado em qualquer campo numérico
-    # Soma o sale_price de todos os itens de venda
-    # Equivale a: SELECT SUM(sale_price) AS total FROM sale_item
-    return SaleItem.objects.aggregate(total=Sum("sale_price"))
-
-
-def get_product_price_stats_by_group(group_id: int) -> dict:
-    # Combina filter por grupo + múltiplos agregados
-    # Equivale a: SELECT AVG(sale_price) AS media, MIN(cost_price) AS menor_custo,
-    #                    MAX(sale_price) AS maior_venda, COUNT(id) AS quantidade
-    #             FROM product WHERE id_product_group = %s
-    return Product.objects.filter(product_group=group_id).aggregate(
-        media=Avg("sale_price"),
-        menor_custo=Min("cost_price"),
-        maior_venda=Max("sale_price"),
-        quantidade=Count("id"),
-    )
-
-
-# =============================================================================
-# Annotate — Anotações (adiciona campos calculados a CADA objeto)
-# =============================================================================
-# annotate() adiciona um campo calculado a CADA registro do QuerySet.
-# O campo anotado pode ser usado em filter(), order_by(), values(), etc.
-# Diferente de aggregate() que retorna UM dicionário com totais.
 def get_departments_with_employee_count() -> QuerySet[Department]:
-    # annotate() adiciona um campo calculado a CADA objeto do QuerySet
-    # Aqui: conta quantos funcionários cada departamento tem
-    # Equivale a: SELECT d.*, COUNT(e.id) AS total_employees
-    #             FROM department d
-    #             LEFT JOIN employee e ON e.id_department = d.id
-    #             GROUP BY d.id
-    # Acesse com: department.total_employees
     return Department.objects.annotate(
-        total_employees=Count("employee"),
+        total_emloyees=Count("employee"),
     )
 
+def get_product_id_and_name() -> QuerySet[Product, dict[str, Any]]:
+    return Product.objects.values("id", "name")
 
-def get_product_groups_with_total_revenue() -> QuerySet[ProductGroup]:
-    # Soma o preço de venda de todos os produtos do grupo
-    # 'product__sale_price' navega pelo relacionamento reverso
-    # Equivale a: SELECT pg.*, SUM(p.sale_price) AS receita_total
-    #             FROM product_group pg
-    #             LEFT JOIN product p ON p.id_product_group = pg.id
-    #             GROUP BY pg.id
-    return ProductGroup.objects.annotate(
-        receita_total=Sum("product__sale_price"),
+def get_products_with_rename_fields() -> QuerySet[Product, dict[str, Any]]:
+    return Product.objects.values(
+        product_id=F(name="id"),
+        product_name=F(name="name"),
+        group_name=F(name="product_group__name"),
+        supplier_name=F(name="supplier__name"),
+        price=F(name="sale_price"),
     )
 
-
-def get_departments_with_many_employees(
-    min_count: int,
-) -> QuerySet[Department]:
-    # Primeiro anota com a contagem, depois filtra pelo valor anotado
-    # Filtrar por annotate é equivalente ao HAVING do SQL
-    # Equivale a: SELECT d.*, COUNT(e.id) AS total
-    #             FROM department d
-    #             LEFT JOIN employee e ON e.id_department = d.id
-    #             GROUP BY d.id
-    #             HAVING COUNT(e.id) >= %s
-    return Department.objects.annotate(total=Count("employee")).filter(
-        total__gte=min_count
+def get_product_count_by_group() -> QuerySet[Product, dict[str, int]]:
+    return Product.objects.values("Product__group__name").annotate(
+        total_products=Count("id"),
     )
 
-
-def get_departments_ordered_by_employee_count() -> QuerySet[Department]:
-    # Ordena departamentos pelo número de funcionários (maior para menor)
-    # '-total' = decrescente (o departamento com mais funcionários primeiro)
-    # Equivale a: SELECT d.*, COUNT(e.id) AS total
-    #             FROM department d
-    #             LEFT JOIN employee e ON e.id_department = d.id
-    #             GROUP BY d.id
-    #             ORDER BY total DESC
-    return Department.objects.annotate(total=Count("employee")).order_by("-total")
-
-
-def get_products_with_profit() -> QuerySet[Product]:
-    # annotate() com F() cria um campo calculado a partir de outros campos
-    # Adiciona um campo 'profit' a cada produto: sale_price - cost_price
-    # Equivale a: SELECT *, (sale_price - cost_price) AS profit FROM product
-    # Acesse com: product.profit
-    return Product.objects.annotate(
-        profit=F("sale_price") - F("cost_price"),
-    )
-
-
-def get_departments_with_avg_salary() -> QuerySet[Department]:
-    # Calcula a média salarial dos funcionários de cada departamento
-    # 'employee__salary' navega: Department -> Employee -> salary
-    # Equivale a: SELECT d.*, AVG(e.salary) AS salario_medio
-    #             FROM department d
-    #             LEFT JOIN employee e ON e.id_department = d.id
-    #             GROUP BY d.id
-    return Department.objects.annotate(
-        salario_medio=Avg("employee__salary"),
-    )
-
-
-def get_product_groups_with_stats() -> QuerySet[ProductGroup]:
-    # Múltiplas anotações na mesma query — tudo resolvido em um único SQL
-    # Equivale a: SELECT pg.*,
-    #               COUNT(p.id) AS total_produtos,
-    #               AVG(p.sale_price) AS preco_medio,
-    #               MAX(p.sale_price) AS preco_maximo
-    #             FROM product_group pg
-    #             LEFT JOIN product p ON p.id_product_group = pg.id
-    #             GROUP BY pg.id
-    return ProductGroup.objects.annotate(
-        total_produtos=Count("product"),
-        preco_medio=Avg("product__sale_price"),
-        preco_maximo=Max("product__sale_price"),
-    )
-
-
-def get_top_departments_by_salary_budget(limit: int) -> QuerySet[Department]:
-    # Combina annotate + order_by + slicing
-    # Departamentos com maior folha salarial total
-    # Equivale a: SELECT d.*, SUM(e.salary) AS folha_total
-    #             FROM department d
-    #             LEFT JOIN employee e ON e.id_department = d.id
-    #             GROUP BY d.id
-    #             ORDER BY folha_total DESC
-    #             LIMIT %s
-    return Department.objects.annotate(folha_total=Sum("employee__salary")).order_by(
-        "-folha_total"
-    )[:limit]
-
-
-# =============================================================================
-# ExpressionWrapper — Expressões com tipo de saída explícito
-# =============================================================================
-# ExpressionWrapper é necessário quando o Django NÃO consegue inferir
-# automaticamente o tipo do resultado de uma expressão.
-# Você deve informar o output_field para que o Django saiba o tipo do resultado.
-def get_products_with_profit_margin_percentage() -> QuerySet[Product]:
-    # Calcula o percentual de lucro: (venda - custo) / custo * 100
-    # Sem ExpressionWrapper, o Django não sabe que o resultado é Decimal
-    # Equivale a: SELECT *,
-    #               ((sale_price - cost_price) / cost_price * 100) AS margin_pct
-    #             FROM product
-    # Acesse com: product.margin_pct
-    return Product.objects.annotate(
-        margin_pct=ExpressionWrapper(
-            (F("sale_price") - F("cost_price")) / F("cost_price") * 100,
-            output_field=DecimalFieldType(max_digits=10, decimal_places=2),
-        ),
-    )
-
-
-def get_products_with_absolute_profit() -> QuerySet[Product]:
-    # Calcula o lucro absoluto em reais de cada produto
-    # Equivale a: SELECT *, (sale_price - cost_price) AS lucro FROM product
-    # output_field define o tipo do resultado — decimal com 2 casas
-    return Product.objects.annotate(
-        lucro=ExpressionWrapper(
-            F("sale_price") - F("cost_price"),
-            output_field=DecimalFieldType(max_digits=16, decimal_places=2),
-        ),
-    )
-
-
-def get_products_with_high_margin(
-    min_margin: Decimal,
-) -> QuerySet[Product]:
-    # Combina ExpressionWrapper com filter — filtra pelo valor calculado
-    # Primeiro anota com o percentual de margem, depois filtra
-    # Equivale a: SELECT *, ((sale_price - cost_price) / cost_price * 100) AS margin_pct
-    #             FROM product
-    #             WHERE ((sale_price - cost_price) / cost_price * 100) >= %s
-    return Product.objects.annotate(
-        margin_pct=ExpressionWrapper(
-            (F("sale_price") - F("cost_price")) / F("cost_price") * 100,
-            output_field=DecimalFieldType(max_digits=10, decimal_places=2),
-        ),
-    ).filter(margin_pct__gte=min_margin)
-
-
-def get_products_with_tax_included(tax_rate: Decimal) -> QuerySet[Product]:
-    # Value() injeta uma CONSTANTE na expressão SQL
-    # Diferente de usar Decimal do Python diretamente, Value() é explícito
-    # Calcula: sale_price * (1 + tax_rate / 100) = preço com imposto
-    # Equivale a: SELECT *, sale_price * 1.15 AS price_with_tax FROM product
-    return Product.objects.annotate(
-        price_with_tax=ExpressionWrapper(
-            F("sale_price") * (Value(1) + Value(tax_rate) / Value(100)),
-            output_field=DecimalFieldType(max_digits=16, decimal_places=2),
-        ),
-    )
-
-
-def get_products_margin_vs_group_commission() -> QuerySet[Product]:
-    # Compara margem do produto com comissão do grupo
-    # Navega pelo relacionamento para acessar commission_percentage
-    # Equivale a: SELECT p.*,
-    #               ((p.sale_price - p.cost_price) / p.cost_price * 100)
-    #               - pg.commission_percentage AS margin_minus_commission
-    #             FROM product p
-    #             JOIN product_group pg ON p.id_product_group = pg.id
-    return Product.objects.annotate(
-        margin_minus_commission=ExpressionWrapper(
-            (F("sale_price") - F("cost_price")) / F("cost_price") * 100
-            - F("product_group__commission_percentage"),
-            output_field=DecimalFieldType(max_digits=10, decimal_places=2),
-        ),
-    )
-
-
-def get_products_with_high_margin_ordered(
-    min_margin: Decimal,
-) -> QuerySet[Product]:
-    # Exemplo completo: ExpressionWrapper + filter + order_by
-    # Calcula margem, filtra por mínimo, e ordena da maior para menor
-    # Equivale a: SELECT *, ((sale_price - cost_price) / cost_price * 100) AS margin_pct
-    #             FROM product
-    #             WHERE ((sale_price - cost_price) / cost_price * 100) >= %s
-    #             ORDER BY margin_pct DESC
-    return (
-        Product.objects.annotate(
-            margin_pct=ExpressionWrapper(
-                (F("sale_price") - F("cost_price")) / F("cost_price") * 100,
-                output_field=DecimalFieldType(max_digits=10, decimal_places=2),
-            ),
+def get_brach_sales(brach_id: int) -> Decimal:
+    return Branch.objects.filter(id=brach_id).aggregate(
+        total_sale=Sum(
+            F(name="sales__sale__items__quantity") * F(name)
         )
-        .filter(margin_pct__gte=min_margin)
-        .order_by("-margin_pct")
     )
