@@ -1,9 +1,10 @@
 from decimal import Decimal
+from typing import Any
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Sum, F, Count
 
 from core import models
-from core.models import Product, Employee
+from core.models import Product, Employee, Department
 
 
 def get_all_products():
@@ -155,3 +156,55 @@ def get_employees_name_endswith(prefix: str) -> QuerySet[Employee]:
 def count_employees_by_name_name(name: str) -> int:
     usuarios = models.Employee.objects.filter(name__icontains=name, active=True)
     return usuarios.count()
+
+
+def get_total_employee_salary() -> dict:
+    return models.Employee.objects.aggregate(Sum('salary'))
+
+
+def get_total_employee_witch_salary() -> dict:
+    return models.Employee.objects.aggregate(total=Sum('salary'))
+
+
+def get_branch_sales(branch_id: int) -> Decimal:
+    return models.Branch.objects.filter(id=branch_id).aggregate(
+        total_sale=Sum(
+            F("sales__sale_items__quantity") * F("sales__sale_items__sale_price")
+        ),
+    )["total_sale"] or Decimal(value="0.00")
+
+
+def get_departaments_with_employee_count() -> QuerySet[Department]:
+    return models.Department.objects.annotate(
+        total_employees=Count('employee')
+    )
+
+
+def get_product_id_and_name() -> QuerySet[Product, dict[str, Any]]:
+    return models.Product.objects.values_list("id", "name")
+
+
+def get_products_with_renamed_field() -> QuerySet[Product, dict[str, Any]]:
+    return models.Product.objects.values(
+        product_id=F("id"),
+        product_name=F("name"),
+        group_name=F("product_group__name"),
+        suppiler_name=F("supplier__name"),
+        price=F("sale_price"),
+    )
+
+
+def get_product_count_by_group() -> QuerySet[Product, dict[str, int]]:
+    return models.Product.objects.values("product_group__name").annotate(
+        total_products=Count("id"),
+    )
+
+
+def get_branch_sale():
+    vendas = models.Branch.objects.values("name").annotate(
+        total_sale=Sum(
+            F("sales__sale_items__quantity") * F("sales__sale_items__sale_price")
+        )
+    )
+
+    for items in venda

@@ -1,4 +1,3 @@
-
 from datetime import date
 
 from django.db import models
@@ -272,16 +271,19 @@ class Sale(BaseModel):
         to="Branch",
         on_delete=models.RESTRICT,
         db_column="id_branch",
+        related_name="sales",
     )
     customer = models.ForeignKey(
         to="Customer",
         on_delete=models.RESTRICT,
         db_column="id_customer",
+        related_name="sales",
     )
     employee = models.ForeignKey(
         to="Employee",
         on_delete=models.RESTRICT,
         db_column="id_employee",
+        related_name="sales",
     )
 
     class Meta:
@@ -302,11 +304,13 @@ class SaleItem(BaseModel):
         to="Product",
         on_delete=models.RESTRICT,
         db_column="id_product",
+        related_name="sale_items",
     )
     sale = models.ForeignKey(
         to="Sale",
         on_delete=models.RESTRICT,
         db_column="id_sale",
+        related_name="sale_items",
     )
     sale_price = models.DecimalField(
         max_digits=16,
