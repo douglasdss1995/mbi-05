@@ -1,9 +1,10 @@
 from decimal import Decimal
+from typing import Any
 
-from django.db.models import F, QuerySet, Q
+from django.db.models import F, QuerySet, Q, Sum, Count
 
 from core import models
-from core.models import Employee, Product, Customer
+from core.models import Employee, Product, Customer, Department, Branch
 
 
 def deactivate_all_products() -> int:
@@ -144,3 +145,45 @@ def get_all_cities():
 def increase_all_salaries(percentage: Decimal) -> int:
     multiplier = 1 + percentage / 100
     return models.Employee.objects.all().update(salary=F(name='salary') * multiplier)
+
+
+def get_total_salary_with_alias() -> dict:
+    return models.Employee.objects.aggregate(total=Sum('salary'))
+
+
+def get_branch_sales(branch_id: int) -> Decimal:
+    return models.Branch.objects.filter(id=branch_id).aggregate(
+        total_sale=Sum(
+            F(name="sales__sale_items__quantity") * F(name="sales__sale_items__sale_price")
+        )
+    )["total_sale"] or Decimal(value="0.00")
+
+
+def get_departments_with_employee_count() -> QuerySet[Department]:
+    return models.Department.objects.annotate(
+        total_employees=Count('employee')
+    )
+
+
+def get_product_id_and_name() -> QuerySet[Product, dict[str, Any]]:
+    return models.Product.objects.values("id", "name")
+
+
+def get_supplier_name_and_product_group_id():
+    return models.Product.objects.values(
+        product_id=F(name="id"),
+        product_name=F(name="name"),
+        group_name=F(name="product_group__name"),
+        supplier_name=F(name="supplier__name"),
+        price=F(name="sale_price"),
+    )
+
+
+def get_product_count_by_group() -> QuerySet[Product, dict[str, Any]]:
+    return models.Product.objects.values("product_group__name").annotate(
+        total_poducts=Count("id")
+    )
+
+
+def sale_by_branch(field_name: str = "Total de vendas desta filial:") -> QuerySet[Branch, dict[str, Any]]:
+    return models.Branch.objects.values("name").annotate(**{field_name: Sum('sales')})
