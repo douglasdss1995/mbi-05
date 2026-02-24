@@ -12,6 +12,7 @@ Usaremos os modelos do nosso projeto de vendas para exemplificar.
 
 from datetime import date
 from decimal import Decimal
+from os import name
 from typing import Any
 
 from django.db.models import (
@@ -1053,3 +1054,4 @@ def get_brach_sales(brach_id: int) -> Decimal:
             F(name="sales__sale__items__quantity") * F(name)
         )
     )
+

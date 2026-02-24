@@ -1,4 +1,10 @@
+from crypt import methods
+
+from django.contrib.admin import action
+from django.db.models import Count
+from psycopg.rows import args_row
 from rest_framework import viewsets
+from rest_framework.response import Response
 
 from core import models, serializers
 
@@ -41,6 +47,15 @@ class DistrictViewSet(viewsets.ModelViewSet):
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = models.Branch.objects.all()
     serializer_class = serializers.BranchSerializer
+
+    @action(detaol=False, methods=["get"])
+    def departments_report(self, request *args, **kwargs):
+    queryset = models.Department.objects.values(
+        "name"
+    ).annotate(
+        qtd_emloyess=Count("employees"),
+    )
+    return Response(queryset)
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):

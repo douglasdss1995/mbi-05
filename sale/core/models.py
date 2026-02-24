@@ -177,6 +177,25 @@ class Employee(NameBaseModel):
         db_column="id_marital_status",
     )
 
+    @property
+    def age(self) -> int:
+        """Calculate age of employee."""
+        today = date.today()
+
+        age_years = today.year - self.birth_date.year
+
+        birthaday_this_year = date(
+            year=today.year, month=self.birth_date.month, day=self.birth_date.day
+        )
+        if today < birthaday_this_year:
+            age_years -= 1
+            return age_years
+
+        class EmployeeSerializer(NameBaseSerializer):
+            """Serializer for Employee model."""
+            age = serializers.ReadOnlyField()
+
+
     class Meta:
         managed = True
         db_table = "employee"
