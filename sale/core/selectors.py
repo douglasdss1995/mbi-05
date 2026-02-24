@@ -187,3 +187,23 @@ def get_product_count_by_group() -> QuerySet[Product, dict[str, Any]]:
 
 def sale_by_branch(field_name: str = "Total de vendas desta filial:") -> QuerySet[Branch, dict[str, Any]]:
     return models.Branch.objects.values("name").annotate(**{field_name: Sum('sales')})
+
+
+def product_group_count() -> None:
+    result = (
+        Product.objects.filter(product_group__active=True)
+        .values(product_group_name=F("product_group__name"))
+        .annotate(total=Count("id"))
+    )
+
+    for item in result:
+        print(f"Grupo: {item.get('product_group_name')} - Quantidade: {item.get('total')}")
+
+
+def department_list():
+    departments_active = (
+        Department.objects.filter(active=True).annotate(total_funcionarios=Count("employee"))
+        .order_by("-total_funcionarios")
+    )
+    for object in departments_active:
+        print(f"Departamento: {object.name} - Quantidade: {object.total_funcionarios}")

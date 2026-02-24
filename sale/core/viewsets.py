@@ -1,13 +1,13 @@
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import F, DecimalField, ExpressionWrapper
+from django.db.models import F, DecimalField, ExpressionWrapper, Count
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from core import models, serializers, selectors
+from core import models, serializers, selectors, request_serializers
 
 
 class ProductGroupViewSet(viewsets.ModelViewSet):
@@ -33,6 +33,19 @@ class SaleViewSet(viewsets.ModelViewSet):
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = models.Department.objects.all()
     serializer_class = serializers.DepartmentSerializer
+
+    @action(detail=False, methods=["get"])
+    def departments_report(self, request, *args, **kwargs):
+        request_serializer = request_serializers.DepartmentPaginatorSerializer(
+            data=request.query_params
+        )
+        request_serializer.is_valid(raise_exception=True)
+
+        queryset = models.Department.objects.values("name").annotate(
+            qtd_employees=Count("employees")
+        )[:request_serializer.data["qtd_departments"]]
+
+        return Response(queryset)
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):

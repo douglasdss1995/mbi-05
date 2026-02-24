@@ -167,6 +167,7 @@ class Employee(NameBaseModel):
         to="Department",
         on_delete=models.RESTRICT,
         db_column="id_department",
+        related_name='employees'
     )
     district = models.ForeignKey(
         District,
@@ -188,18 +189,14 @@ class Employee(NameBaseModel):
 
     @property
     def age(self) -> int:
-        """Calculate age of employee."""
         today = date.today()
 
-        # Calcula diferença bruta de anos
         age_years = today.year - self.birth_date.year
 
-        # Verifica se o aniversário deste ano já passou
         birthday_this_year = date(
             today.year, self.birth_date.month, self.birth_date.day
         )
 
-        # Se o aniversário ainda não chegou, subtrai 1
         if today < birthday_this_year:
             age_years -= 1
 
@@ -230,6 +227,7 @@ class Product(NameBaseModel):
         to="ProductGroup",
         on_delete=models.RESTRICT,
         db_column="id_product_group",
+        related_name="product_groups",
     )
     supplier = models.ForeignKey(
         to="Supplier",

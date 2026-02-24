@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from core import models
 
+
 class ProductGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProductGroup
@@ -19,55 +20,79 @@ class CitySerializer(serializers.ModelSerializer):
         model = models.City
         fields = '__all__'
 
+
 class MaritalStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.MaritalStatus
         fields = '__all__'
+
 
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Employee
         fields = '__all__'
 
+    age = serializers.ReadOnlyField()
+
+
 class SaleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Sale
         fields = '__all__'
 
+
 class SaleItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.SaleItem
         fields = '__all__'
+    #
+    # def validate_quantity(self, value):
+    #     if value <= 0:
+    #         raise serializers.ValidationError(detail="Quantity can't be less than 0.")
+    #     return value
+    #
+    # def validate(self, attrs):
+    #     quantity = attrs['quantity']
+    #     if quantity <= 0:
+    #         raise serializers.ValidationError(detail="Quantity can't be less than 0.")
+    #     return attrs
+
 
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Supplier
         fields = '__all__'
 
+
 class BranchSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Branch
         fields = '__all__'
+
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Customer
         fields = '__all__'
 
+
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Department
         fields = '__all__'
+
 
 class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.District
         fields = '__all__'
 
+
 class StateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.State
         fields = '__all__'
+
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
