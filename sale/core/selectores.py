@@ -1,3 +1,5 @@
+from django.db.models import Count
+
 from core import models
 
 
@@ -53,3 +55,14 @@ def create_product():
         id_product_group=product_group,
         active=True
     )
+
+
+def exercicio_02() -> None:
+    result = (
+        Department.objects.filter(active=True)
+        .annotate(total_funcionarios=Count("employee"))
+        .order_by("-total_funcionarios")
+    )
+
+    for item in result:
+        print(f"Departamento: {item.name} - Quantidade: {item.total_funcionarios}")

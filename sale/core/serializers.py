@@ -85,3 +85,15 @@ class SaleItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.SaleItem
         fields = '__all__'
+
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(detail='Quantity cannot be zero or negative.')
+        return value
+
+    def validate(self, attrs):
+        quantity = attrs['quantity']
+        if quantity <= 0:
+            raise serializers.ValidationError(detail='Quantity cannot be zero or negative.')
+
+        return attrs
