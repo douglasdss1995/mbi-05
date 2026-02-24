@@ -165,6 +165,7 @@ class Employee(NameBaseModel):
         to="Department",
         on_delete=models.RESTRICT,
         db_column="id_department",
+        related_name="employees",
     )
     district = models.ForeignKey(
         District,
@@ -192,7 +193,7 @@ class Employee(NameBaseModel):
         # Calcula diferença bruta de anos
         age_years = today.year - self.birth_date.year
 
-        # Verifica se o aniversário deste ano já passou
+        # Verifica se o aniversári o deste ano já passou
         birthday_this_year = date(
             today.year, self.birth_date.month, self.birth_date.day
         )

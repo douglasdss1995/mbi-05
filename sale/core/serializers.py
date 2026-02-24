@@ -68,6 +68,20 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = models.Employee
         fields = '__all__'
 
+    age = serializers.ReadOnlyField()
+
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(detail='Quantity cannot be zero or negative.')
+        return value
+
+    def validate(self, attrs):
+        quantity = attrs['quantity']
+        if quantity <= 0:
+            raise serializers.ValidationError(detail='Quantity cannot be zero or negative.')
+
+        return attrs
+
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
