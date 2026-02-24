@@ -2578,3 +2578,100 @@ def categorize_employee_age(employee_id: int) -> str:
     )
 
     return employee.age_category if employee else "Funcionário não encontrado"
+
+
+# =============================================================================
+# Exercício 1
+# =============================================================================
+# Contar quantos produtos existem em cada grupo de produtos.
+# Liste todos os grupos de produtos ativos, mostrando o nome do grupo e quantos
+# produtos cada um possui.
+# Imprima o nome do grupo de produtos e a quantidade de produtos
+def exercicio_01() -> None:
+    # result = (
+    #     ProductGroup.objects.filter(active=True)
+    #     .annotate(total_produtos=Count("product"))
+    #     .order_by("-total_produtos")
+    # )
+
+    result = (
+        Product.objects.filter(product_group__active=True)
+        .values(product_group_name=F("product_group__name"))
+        .annotate(total=Count("id"))
+    )
+
+    for item in result:
+        print(f"Grupo: {item.get('product_group_name')} - Quantidade: {item.get('total')}")
+
+
+# =============================================================================
+# Exercício 2
+# =============================================================================
+# Liste os nomes de todos os departamentos ativos e quantidade de funcionários.
+# Ordene do departamento com mais funcionários para o com menos.
+# Imprima o nome do departamento e quantidade
+def exercicio_02() -> None:
+    result = (
+        Department.objects.filter(active=True)
+        .annotate(total_funcionarios=Count("employee"))
+        .order_by("-total_funcionarios")
+    )
+
+    for item in result:
+        print(f"Departamento: {item.name} - Quantidade: {item.total_funcionarios}")
+
+
+# =============================================================================
+# Exercício 3
+# =============================================================================
+# Para um departamento específico (recebido por parâmetro), calcule:
+# - total: soma de todos os salários
+# - media: média dos salários
+# - menor: menor salário
+# - maior: maior salário
+# - quantidade: total de funcionários
+# Considere APENAS funcionários ativos.
+# Imprima o nome do departamento e os valores calculados
+def exercicio_03(department_id: int) -> None:
+    department = Department.objects.get(id=department_id)
+    print(f"Departamento: {department.name}")
+    result = Employee.objects.filter(
+        department=department_id,
+        active=True,
+    ).aggregate(
+        total=Sum("salary"),
+        media=Avg("salary"),
+        menor=Min("salary"),
+        maior=Max("salary"),
+        quantidade=Count("id"),
+    )
+
+    print(f"total: {result.get('total')}")
+    print(f"media: {result.get('media')}")
+    print(f"menor: {result.get('menor')}")
+    print(f"maior: {result.get('maior')}")
+    print(f"quantidade: {result.get('quantidade')}")
+
+
+# =============================================================================
+# Exercício 4
+# =============================================================================
+# Liste a quantidade de vendas e o valor vendido para cada filial
+# Considere APENAS filiais ativas.
+# Imprima o nome da filial, quantidade de vendas e valor total vendido
+def exercicio_04() -> None:
+    result = (
+        Branch.objects.filter(active=True)
+        .annotate(
+            total_vendas=Count("sales"),
+            valor_vendido=Sum(
+                F("sales__sale_items__quantity") * F("sales__sale_items__sale_price")
+            ),
+        )
+        .order_by("-valor_vendido")
+    )
+
+    for item in result:
+        print(
+            f"Filial: {item.name} - Qtd: {item.total_vendas} - Valor: {item.valor_vendido}"
+        )
