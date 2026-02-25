@@ -165,6 +165,7 @@ class Employee(NameBaseModel):
         to="Department",
         on_delete=models.RESTRICT,
         db_column="id_department",
+        related_name="employees",
     )
     district = models.ForeignKey(
         District,
@@ -271,19 +272,19 @@ class Sale(BaseModel):
         to="Branch",
         on_delete=models.RESTRICT,
         db_column="id_branch",
-        related_name="sales"
+        related_name="sales",
     )
     customer = models.ForeignKey(
         to="Customer",
         on_delete=models.RESTRICT,
         db_column="id_customer",
-        related_name="sales"
+        related_name="sales",
     )
     employee = models.ForeignKey(
         to="Employee",
         on_delete=models.RESTRICT,
         db_column="id_employee",
-        related_name="sales"
+        related_name="sales",
     )
 
     class Meta:

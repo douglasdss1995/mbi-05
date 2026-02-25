@@ -29,10 +29,8 @@ from django.db.models import (
     Value,
     When,
 )
-from django.db.models.fields import (
-    CharField,
-    DecimalField as DecimalFieldType,
-)
+from django.db.models.fields import CharField
+from django.db.models.fields import DecimalField as DecimalFieldType
 from django.db.models.functions import ExtractYear
 
 from core.models import (
@@ -231,9 +229,9 @@ def create_zone(name: str) -> Zone:
 
 
 def create_product_group(
-        name: str,
-        commission_percentage: Decimal,
-        gain_percentage: Decimal,
+    name: str,
+    commission_percentage: Decimal,
+    gain_percentage: Decimal,
 ) -> ProductGroup:
     """Cria um novo grupo de produto.
 
@@ -254,8 +252,8 @@ def create_product_group(
 
 
 def create_state(
-        name: str,
-        abbreviation: str,
+    name: str,
+    abbreviation: str,
 ) -> State:
     """Cria um novo estado.
 
@@ -274,8 +272,8 @@ def create_state(
 
 
 def create_supplier(
-        name: str,
-        legal_document: str,
+    name: str,
+    legal_document: str,
 ) -> Supplier:
     """Cria um novo fornecedor.
 
@@ -297,11 +295,11 @@ def create_supplier(
 
 
 def create_product(
-        name: str,
-        cost_price: Decimal,
-        sale_price: Decimal,
-        product_group: ProductGroup,
-        supplier: Supplier,
+    name: str,
+    cost_price: Decimal,
+    sale_price: Decimal,
+    product_group: ProductGroup,
+    supplier: Supplier,
 ) -> Product:
     """Cria um novo produto.
 
@@ -795,8 +793,8 @@ def get_products_by_name_contains(term: str) -> QuerySet[Product]:
 
 
 def get_products_in_price_range(
-        min_price: Decimal,
-        max_price: Decimal,
+    min_price: Decimal,
+    max_price: Decimal,
 ) -> QuerySet[Product]:
     """Retorna produtos em uma faixa de preço.
 
@@ -833,8 +831,8 @@ def get_employees_name_startswith(prefix: str) -> QuerySet[Employee]:
 
 
 def get_customers_with_income_between(
-        min_income: Decimal,
-        max_income: Decimal,
+    min_income: Decimal,
+    max_income: Decimal,
 ) -> QuerySet[Customer]:
     """Retorna clientes com renda em uma faixa específica.
 
@@ -1251,8 +1249,8 @@ def get_employees_born_on_day(day: int) -> QuerySet[Employee]:
 
 
 def get_employees_hired_in_year_and_month(
-        year: int,
-        month: int,
+    year: int,
+    month: int,
 ) -> QuerySet[Employee]:
     """Retorna funcionários contratados em um ano e mês específicos.
 
@@ -1505,7 +1503,7 @@ def get_products_by_group_name(group_name: str) -> QuerySet[Product]:
 
 
 def get_employees_by_department_name(
-        department_name: str,
+    department_name: str,
 ) -> QuerySet[Employee]:
     """Busca funcionários pelo nome do departamento.
 
@@ -1546,7 +1544,7 @@ def get_customers_by_city_name(city_name: str) -> QuerySet[Customer]:
 
 
 def get_customers_by_state_abbreviation(
-        abbreviation: str,
+    abbreviation: str,
 ) -> QuerySet[Customer]:
     """Busca clientes pela sigla do estado.
 
@@ -1592,7 +1590,7 @@ def get_employees_in_zone(zone_name: str) -> QuerySet[Employee]:
 
 
 def get_products_by_supplier_active_status(
-        is_active: bool,
+    is_active: bool,
 ) -> QuerySet[Product]:
     """Busca produtos pelo status ativo do fornecedor.
 
@@ -1612,7 +1610,7 @@ def get_products_by_supplier_active_status(
 
 
 def get_products_by_group_min_commission(
-        min_commission: Decimal,
+    min_commission: Decimal,
 ) -> QuerySet[Product]:
     """Busca produtos pelo percentual mínimo de comissão do grupo.
 
@@ -1812,8 +1810,8 @@ def increase_all_salaries(percentage: Decimal) -> int:
 
 
 def apply_discount_to_products(
-        discount_percentage: Decimal,
-        group_id: int,
+    discount_percentage: Decimal,
+    group_id: int,
 ) -> int:
     """Aplica desconto em todos os produtos de um grupo.
 
@@ -2242,7 +2240,7 @@ def get_products_with_absolute_profit() -> QuerySet[Product]:
 
 
 def get_products_with_high_margin(
-        min_margin: Decimal,
+    min_margin: Decimal,
 ) -> QuerySet[Product]:
     """Retorna produtos com margem de lucro acima de um limite mínimo.
 
@@ -2314,7 +2312,7 @@ def get_products_margin_vs_group_commission() -> QuerySet[Product]:
 
 
 def get_products_with_high_margin_ordered(
-        min_margin: Decimal,
+    min_margin: Decimal,
 ) -> QuerySet[Product]:
     """Retorna produtos com alta margem de lucro, ordenados decrescentemente.
 
@@ -2588,11 +2586,6 @@ def categorize_employee_age(employee_id: int) -> str:
 # produtos cada um possui.
 # Imprima o nome do grupo de produtos e a quantidade de produtos
 def exercicio_01() -> None:
-    # result = (
-    #     ProductGroup.objects.filter(active=True)
-    #     .annotate(total_produtos=Count("product"))
-    #     .order_by("-total_produtos")
-    # )
 
     result = (
         Product.objects.filter(product_group__active=True)
@@ -2601,7 +2594,9 @@ def exercicio_01() -> None:
     )
 
     for item in result:
-        print(f"Grupo: {item.get('product_group_name')} - Quantidade: {item.get('total')}")
+        print(
+            f"Grupo: {item.get('product_group_name')} - Quantidade: {item.get('total')}"
+        )
 
 
 # =============================================================================
@@ -2613,12 +2608,14 @@ def exercicio_01() -> None:
 def exercicio_02() -> None:
     result = (
         Department.objects.filter(active=True)
-        .annotate(total_funcionarios=Count("employee"))
-        .order_by("-total_funcionarios")
+        .values(department_name=F("name"))
+        .annotate(total=Count("employees"))
     )
 
     for item in result:
-        print(f"Departamento: {item.name} - Quantidade: {item.total_funcionarios}")
+        print(
+            f"Departamento: {item.get('department_name')} - Quantidade: {item.get('total')}"
+        )
 
 
 # =============================================================================

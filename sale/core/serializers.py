@@ -64,6 +64,8 @@ class MaritalStatusSerializer(serializers.ModelSerializer):
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
+    age = serializers.ReadOnlyField()
+
     class Meta:
         model = models.Employee
         fields = '__all__'
